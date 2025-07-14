@@ -5,6 +5,8 @@ import {
 } from "@subql/types-stellar";
 import { Horizon } from "@stellar/stellar-sdk";
 
+import dotenv from "dotenv";
+dotenv.config();
 /* This is your project configuration */
 const project: StellarProject = {
   specVersion: "1.0.0",
@@ -40,7 +42,7 @@ const project: StellarProject = {
      * If you use a rate limited endpoint, adjust the --batch-size and --workers parameters
      * These settings can be found in your docker-compose.yaml, they will slow indexing but prevent your project being rate limited
      */
-    endpoint: ["https://horizon-testnet.stellar.org"],
+    endpoint: [process.env.HORIZON_RPC_ENDPOINT!,"https://horizon-testnet.stellar.org"],
     /* This is a specific Soroban endpoint
       It is only required when you are using a soroban/EventHandler */
     sorobanEndpoint: "https://soroban-testnet.stellar.org",

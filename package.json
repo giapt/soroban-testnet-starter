@@ -25,7 +25,8 @@
     "@subql/common": "latest",
     "@subql/types-stellar": "latest",
     "axios": "^1.10.0",
-    "url-search-params-polyfill": "^8.2.5"
+    "url-search-params-polyfill": "^8.2.5",
+    "dotenv": "^17.2.0"
   },
   "devDependencies": {
     "@subql/cli": "latest",
