@@ -8,14 +8,13 @@ type TeamFinanceToken @entity {
   txHash: String
   sequence: Int
   address: String!
-  
-"""
+  owner: String
   timestamp: BigInt
+"""
   name: String!
   symbol: String!
   totalSupply: BigInt!
   decimals: Int!
-  owner: String
   ipfs: String
 """
 

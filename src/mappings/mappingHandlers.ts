@@ -8,51 +8,13 @@ import {
   AccountCredited,
   AccountDebited,
 } from "@stellar/stellar-sdk/lib/horizon/types/effects";
-import { Horizon, xdr } from "@stellar/stellar-sdk";
+import { Horizon, xdr, scValToNative } from "@stellar/stellar-sdk";
 import { Address } from "@stellar/stellar-base";
 import initWasm, { decode } from '@stellar/stellar-xdr-json/stellar_xdr_json.js';
 import fetch from "node-fetch";
-// import fs from 'fs';
-import path from 'path';
-import { constants } from 'fs';
-import fs,{ readdir, stat, access } from 'fs/promises';
-import { TextDecoder, TextEncoder } from 'util'; 
 
 
-if (typeof global.TextDecoder === 'undefined') {
-  // @ts-ignore - provide TextDecoder and TextEncoder for WASM
-  global.TextDecoder = TextDecoder;
-  global.TextEncoder = TextEncoder;
-}
-
-interface XdrDecodeRequest {
-  type: string;
-  xdr: string;
-}
-
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath, constants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function listFiles(dirPath: string) {
-  const files = await readdir(dirPath);
-
-  for (const file of files) {
-    const filePath = path.join(dirPath, file);
-    const fileStat = await stat(filePath);
-
-    if (fileStat.isFile()) {
-      logger.info(`File: ${file}`);
-    } else if (fileStat.isDirectory()) {
-      logger.info(`Directory: ${file}`);
-    }
-  }
-}
+import { getName } from "./utils";
 
 // export async function handleOperation(
 //   op: StellarOperation<Horizon.HorizonApi.PaymentOperationResponse>,
@@ -185,16 +147,14 @@ export async function handleMintEvent(event: SorobanEvent): Promise<void> {
   logger.info(`Event ID: ${event.id}`);
   const xdrString = JSON.stringify(event.transaction?.envelope_xdr);
   const xdrType = "TransactionEnvelope"; // Or other XDR type
-
-  let owner = "";
   
-  // const owner = event?.source_account
-  if ('source_account' in event && typeof event.source_account === 'string') {
-    owner = event.source_account;
-  }
   // logger.info(`Owner: ${owner}`);
   logger.info(`contractId: ${event.contractId?.contractId().toString()}`);
   const contractAddress = event.contractId?.contractId().toString() || "unknown";
+
+  // const name = await getName(contractAddress);
+  // logger.info(`Contract Name: ${name}`);
+  // logger.info(`Date: ${Date.parse(event.ledgerClosedAt)}`);
 
   const token = TeamFinanceToken.create({
     id: event.id,
@@ -203,19 +163,12 @@ export async function handleMintEvent(event: SorobanEvent): Promise<void> {
     sequence: event.ledger!.sequence,
     envelopeXdr: event.transaction?.envelope_xdr,
     address: contractAddress,
+    owner: scValToNative(event.value), // Assuming value is the owner address
+    timestamp: BigInt(Date.parse(event.ledgerClosedAt)),
     // contract: event.contractId?.contractId().toString()!,
     // owner: owner,
   });
   await Promise.all([token.save()]);
-
-  // logger.info(JSON.stringify(event.transaction));
-
-  // logger.info(`__dirname: ${__dirname}`);
-  // listFiles(__dirname);
-  
-
- 
-  // listFiles(keyFilePath);
 
   // try {
   //   const keyFilePath = path.join(__dirname, "../src/mappings/stellar_xdr_json_bg.wasm");
@@ -248,51 +201,6 @@ export async function handleMintEvent(event: SorobanEvent): Promise<void> {
   //   logger.error(`Error fetching data: ${error}`);
   // }
   
-
-  // logger.info(JSON.stringify(event.topic));
-
-  // // Initialize the WASM runtime
-  // await initWasm(wasmBinary);
-  // const decoded = decode(xdrType, xdrString);
-  // const data = JSON.parse(decoded);
-  // logger.info(`Decoded XDR: ${JSON.stringify(data, null, 2)}`);
-  
-  // const jsonResult = decode(xdrType, xdrString);
-  // logger.info(jsonResult);
-  // const {
-  //   topic: [owner],
-  // } = event;
-  // logger.info(owner);
-  // try {
-  //   decodeAddress(from);
-  //   decodeAddress(to);
-  // } catch (e) {
-  //   logger.info(`decode address failed`);
-  // }
-
-  // const fromAccount = await checkAndGetAccount(
-  //   decodeAddress(from),
-  //   event.ledger!.sequence,
-  // );
-  // const toAccount = await checkAndGetAccount(
-  //   decodeAddress(to),
-  //   event.ledger!.sequence,
-  // );
-
-  // // Create the new transfer entity
-  // const transfer = Transfer.create({
-  //   id: event.id,
-  //   ledger: event.ledger!.sequence,
-  //   date: new Date(event.ledgerClosedAt),
-  //   contract: event.contractId?.contractId().toString()!,
-  //   fromId: fromAccount.id,
-  //   toId: toAccount.id,
-  //   value: BigInt(event.value.i64().toString()),
-  // });
-
-  // fromAccount.lastSeenLedger = event.ledger!.sequence;
-  // toAccount.lastSeenLedger = event.ledger!.sequence;
-  // await Promise.all([fromAccount.save(), toAccount.save(), transfer.save()]);
 }
 
 // async function checkAndGetAccount(
