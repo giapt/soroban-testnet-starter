@@ -7,6 +7,7 @@ import { Horizon } from "@stellar/stellar-sdk";
 
 import dotenv from "dotenv";
 dotenv.config();
+const endpoints = process.env.HORIZON_RPC_ENDPOINT ? process.env.HORIZON_RPC_ENDPOINT.split(",") : ["https://horizon-testnet.stellar.org"];
 /* This is your project configuration */
 const project: StellarProject = {
   specVersion: "1.0.0",
@@ -42,7 +43,7 @@ const project: StellarProject = {
      * If you use a rate limited endpoint, adjust the --batch-size and --workers parameters
      * These settings can be found in your docker-compose.yaml, they will slow indexing but prevent your project being rate limited
      */
-    endpoint: [process.env.HORIZON_RPC_ENDPOINT!,"https://horizon-testnet.stellar.org"],
+    endpoint: endpoints,
     /* This is a specific Soroban endpoint
       It is only required when you are using a soroban/EventHandler */
     sorobanEndpoint: "https://soroban-testnet.stellar.org",
@@ -51,7 +52,7 @@ const project: StellarProject = {
     {
       kind: StellarDatasourceKind.Runtime,
       /* Set this as a logical start block, it might be block 1 (genesis) or when your contract was deployed */
-      startBlock: 441550,
+      startBlock: 577292,
       mapping: {
         file: "./dist/index.js",
         handlers: [
